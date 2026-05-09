@@ -1,0 +1,7 @@
+flask>=2.3.0
+flask-login>=0.6.0
+python-dotenv>=1.0.0
+pyasn1>=0.5.0
+asn1tools>=0.160.0
+werkzeug>=2.3.0
+gunicorn>=21.0.0

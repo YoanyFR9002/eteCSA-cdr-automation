@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASN.1 Web Decoder v3.0 - Enterprise Edition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/heatmap.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1>🔍 ASN.1 Web Decoder <span class="version-badge">v3.0 Enterprise</span></h1>
+            <nav class="header-nav">
+                <button id="theme-toggle" class="btn-icon" title="Cambiar tema">🌙</button>
+                <a href="#" class="nav-link" onclick="showHelp()">Ayuda</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <!-- Upload Section -->
+        <section class="upload-section card">
+            <h2>📥 Cargar Datos ASN.1</h2>
+            
+            <div class="upload-options">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="hex-input">Hex Manual</button>
+                    <button class="tab-btn" data-tab="file-upload">Archivo</button>
+                </div>
+                
+                <!-- Hex Input Tab -->
+                <div id="hex-input" class="tab-content active">
+                    <textarea 
+                        id="hex-data" 
+                        placeholder="Pegue datos hex aquí (ej: 30 82 01 22 02 01 01...)"
+                        spellcheck="false"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button id="paste-btn" class="btn btn-secondary">📋 Pegar</button>
+                        <button id="clear-hex-btn" class="btn btn-secondary">🗑️ Limpiar</button>
+                        <button id="load-sample-btn" class="btn btn-secondary">📄 Ejemplo</button>
+                    </div>
+                </div>
+                
+                <!-- File Upload Tab -->
+                <div id="file-upload" class="tab-content">
+                    <div class="file-drop-zone" id="drop-zone">
+                        <input type="file" id="file-input" accept=".bin,.hex,.txt,.dat,.der,.ber" hidden>
+                        <div class="drop-message">
+                            <span class="drop-icon">📁</span>
+                            <p>Arrastre archivo aquí o haga click para seleccionar</p>
+                            <small>Formatos: BIN, HEX, TXT, DER, BER (Max 100MB)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="decode-btn" class="btn btn-primary btn-large">
+                🚀 Decodificar
+            </button>
+        </section>
+
+        <!-- Stats Panel -->
+        <section id="stats-panel" class="stats-section card hidden">
+            <h2>📊 Estadísticas CDR</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Tamaño Total</span>
+                    <span class="stat-value" id="stat-size">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Registros</span>
+                    <span class="stat-value" id="stat-records">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Octetos</span>
+                    <span class="stat-value" id="stat-octets">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Tiempo Decode</span>
+                    <span class="stat-value" id="stat-time">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Encoding</span>
+                    <span class="stat-value" id="stat-encoding">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Errores</span>
+                    <span class="stat-value error-count" id="stat-errors">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Bar -->
+        <section id="search-section" class="search-section card hidden">
+            <h2>🔎 Búsqueda Inteligente</h2>
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Buscar por tag, hex o contenido..."
+                    autocomplete="off"
+                >
+                <div class="search-filters">
+                    <label>
+                        <input type="checkbox" id="filter-tag" checked> Tags
+                    </label>
+                    <label>
+                        <input type="checkbox" id="filter-hex" checked> Hex
+                    </label>
+                    <label>
+                        <input type="checkbox" id="filter-value" checked> Valores
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section - Split View -->
+        <section id="results-section" class="results-section card hidden">
+            <div class="results-header">
+                <h2>📋 Resultados</h2>
+                <div class="export-actions">
+                    <button id="export-txt" class="btn btn-small">📄 TXT</button>
+                    <button id="export-json" class="btn btn-small">📑 JSON</button>
+                    <button id="export-csv" class="btn btn-small">📊 CSV</button>
+                    <button id="export-pcap" class="btn btn-small">📦 PCAPNG</button>
+                </div>
+            </div>
+            
+            <div class="split-view">
+                <!-- Hex View -->
+                <div class="view-pane hex-pane">
+                    <h3>🔢 Vista Hexadecimal</h3>
+                    <div id="hex-view" class="code-view"></div>
+                </div>
+                
+                <!-- Decoded Tree View -->
+                <div class="view-pane tree-pane">
+                    <h3>🌳 Árbol Decodificado</h3>
+                    <div id="tree-view" class="tree-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Errors Section -->
+        <section id="errors-section" class="errors-section card hidden">
+            <h2>⚠️ Errores y Advertencias</h2>
+            <div id="errors-list" class="errors-list"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>ASN.1 Web Decoder v3.0 Enterprise Edition | 
+           <a href="#" onclick="showAbout()">Acerca de</a> | 
+           <a href="#" onclick="showHelp()">Documentación</a>
+        </p>
+    </footer>
+
+    <!-- Modal Help -->
+    <div id="help-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('help-modal')">&times;</span>
+            <h2>❓ Ayuda</h2>
+            <div class="modal-body">
+                <h3>Cómo usar:</h3>
+                <ol>
+                    <li>Pegue datos hex o cargue un archivo binario</li>
+                    <li>Presione "Decodificar"</li>
+                    <li>Explore los resultados en vista dividida</li>
+                    <li>Use la búsqueda para filtrar campos</li>
+                    <li>Exporte en el formato deseado</li>
+                </ol>
+                <h3>Formatos soportados:</h3>
+                <ul>
+                    <li><strong>BER/DER:</strong> Auto-detectado</li>
+                    <li><strong>Tags:</strong> Universales, APPLICATION, CONTEXT, PRIVATE</li>
+                    <li><strong>Tipos:</strong> INTEGER, STRING, OID, SEQUENCE, SET, etc.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Decodificando...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/decoder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+</body>
+</html>
