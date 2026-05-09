@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDR Automation - Reproceso Capana</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-running {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .console {
+            background: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            border-radius: 5px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+        }
+
+        .console-line.error {
+            color: #ff4444;
+        }
+
+        .console-line.warning {
+            color: #ffbb00;
+        }
+
+        .console-line.success {
+            color: #00ff00;
+        }
+
+        .console-line.info {
+            color: #00bfff;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box strong {
+            color: #1976D2;
+        }
+
+        .logs-section {
+            margin-top: 30px;
+        }
+
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .log-item:hover {
+            background: #f5f5f5;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 CDR Automation</h1>
+            <p>Sistema de Reproceso Capana - Ericsson EMM</p>
+        </div>
+
+        <div class="card">
+            <h2>📅 Configuración del Proceso</h2>
+            
+            <div class="info-box">
+                <strong>ℹ️ Información:</strong>
+                <p>Este sistema ejecuta el proceso completo de reproceso Capana: recuperación de archivos desde la base de datos, procesamiento con Python y movimiento de archivos finales.</p>
+            </div>
+
+            <form id="processForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha_inicio">Fecha de Inicio (AAAAMMDD)</label>
+                        <input type="text" id="fecha_inicio" name="fecha_inicio" 
+                               placeholder="Ej: 20240115" pattern="[0-9]{8}" maxlength="8">
+                        <small style="color: #666;">Dejar vacío para usar ayer por defecto</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha_fin">Fecha de Fin (AAAAMMDD)</label>
+                        <input type="text" id="fecha_fin" name="fecha_fin" 
+                               placeholder="Ej: 20240115" pattern="[0-9]{8}" maxlength="8">
+                        <small style="color: #666;">Dejar vacío para usar misma fecha que inicio</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btnExecute">
+                    🚀 Iniciar Proceso
+                </button>
+            </form>
+
+            <div id="alertContainer"></div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="progressText">Procesando...</span>
+                    <span class="status-badge status-running" id="statusBadge">En ejecución</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📟 Consola en Tiempo Real</h2>
+            <div class="console" id="consoleOutput">
+                <div class="console-line info">Esperando inicio del proceso...</div>
+            </div>
+        </div>
+
+        <div class="card logs-section">
+            <h2>📋 Logs Recientes</h2>
+            <div id="logsList">
+                <p style="color: #666; text-align: center;">Cargando logs...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProcessId = null;
+        let eventSource = null;
+
+        // Formatear fecha automáticamente
+        document.getElementById('fecha_inicio').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 8) {
+                this.value = this.value.slice(0, 8);
+            }
+        });
+
+        document.getElementById('fecha_fin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 8) {
+                this.value = this.value.slice(0, 8);
+            }
+        });
+
+        // Mostrar alerta
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Agregar línea a la consola
+        function addConsoleLine(text, type = 'info') {
+            const console = document.getElementById('consoleOutput');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            
+            // Limpiar caracteres de control ANSI si existen
+            const cleanText = text.replace(/\u001b\[[0-9;]*m/g, '');
+            line.textContent = cleanText;
+            
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        // Limpiar consola
+        function clearConsole() {
+            document.getElementById('consoleOutput').innerHTML = '';
+        }
+
+        // Iniciar stream de output
+        function startOutputStream(processId) {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`/api/output/${processId}`);
+            
+            eventSource.onmessage = function(event) {
+                if (event.data === '[END]') {
+                    eventSource.close();
+                    return;
+                }
+                
+                // Determinar tipo de línea
+                let type = 'info';
+                if (event.data.includes('[ERR]') || event.data.includes('ERROR')) {
+                    type = 'error';
+                } else if (event.data.includes('[OK]') || event.data.includes('COMPLETADO')) {
+                    type = 'success';
+                } else if (event.data.includes('[!]') || event.data.includes('WARN')) {
+                    type = 'warning';
+                }
+                
+                addConsoleLine(event.data, type);
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        }
+
+        // Verificar estado del proceso
+        async function checkStatus(processId) {
+            try {
+                const response = await fetch(`/api/status/${processId}`);
+                const data = await response.json();
+                
+                if (data.status === 'completed') {
+                    document.getElementById('statusBadge').className = 'status-badge status-completed';
+                    document.getElementById('statusBadge').textContent = 'Completado';
+                    document.getElementById('progressFill').style.animation = 'none';
+                    document.getElementById('btnExecute').disabled = false;
+                    
+                    if (data.return_code === 0) {
+                        addConsoleLine('\n✅ PROCESO COMPLETADO EXITOSAMENTE', 'success');
+                        showAlert('Proceso completado exitosamente', 'success');
+                    } else {
+                        addConsoleLine(`\n❌ PROCESO FALLÓ (Código: ${data.return_code})`, 'error');
+                        showAlert(`Proceso falló con código ${data.return_code}`, 'error');
+                    }
+                    
+                    loadLogs();
+                } else if (data.status === 'error') {
+                    document.getElementById('statusBadge').className = 'status-badge status-error';
+                    document.getElementById('statusBadge').textContent = 'Error';
+                    document.getElementById('btnExecute').disabled = false;
+                    addConsoleLine('\n❌ ERROR EN LA EJECUCIÓN', 'error');
+                    showAlert('Error en la ejecución del proceso', 'error');
+                } else {
+                    // Continuar verificando
+                    setTimeout(() => checkStatus(processId), 2000);
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+            }
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('processForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fechaInicio = document.getElementById('fecha_inicio').value.trim();
+            const fechaFin = document.getElementById('fecha_fin').value.trim();
+            
+            // Validar fechas
+            const dateRegex = /^[0-9]{8}$/;
+            if (fechaInicio && !dateRegex.test(fechaInicio)) {
+                showAlert('Formato de fecha inválido. Use AAAAMMDD', 'error');
+                return;
+            }
+            if (fechaFin && !dateRegex.test(fechaFin)) {
+                showAlert('Formato de fecha inválido. Use AAAAMMDD', 'error');
+                return;
+            }
+
+            // Deshabilitar botón
+            const btn = document.getElementById('btnExecute');
+            btn.disabled = true;
+            
+            // Limpiar consola y mostrar progreso
+            clearConsole();
+            addConsoleLine('Iniciando proceso...', 'info');
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('statusBadge').className = 'status-badge status-running';
+            document.getElementById('statusBadge').textContent = 'En ejecución';
+            
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fecha_inicio: fechaInicio || null,
+                        fecha_fin: fechaFin || null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentProcessId = data.process_id;
+                    showAlert(data.message, 'success');
+                    
+                    // Iniciar stream de output
+                    startOutputStream(currentProcessId);
+                    
+                    // Monitorear estado
+                    setTimeout(() => checkStatus(currentProcessId), 2000);
+                } else {
+                    showAlert(data.error || 'Error al iniciar el proceso', 'error');
+                    btn.disabled = false;
+                    document.getElementById('progressContainer').style.display = 'none';
+                }
+            } catch (error) {
+                showAlert(`Error de conexión: ${error.message}`, 'error');
+                btn.disabled = false;
+                document.getElementById('progressContainer').style.display = 'none';
+            }
+        });
+
+        // Cargar logs
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                
+                const logsList = document.getElementById('logsList');
+                
+                if (!data.logs || data.logs.length === 0) {
+                    logsList.innerHTML = '<p style="color: #666; text-align: center;">No hay logs disponibles</p>';
+                    return;
+                }
+                
+                logsList.innerHTML = '';
+                data.logs.forEach(log => {
+                    const logItem = document.createElement('div');
+                    logItem.className = 'log-item';
+                    logItem.onclick = () => viewLog(log.name);
+                    
+                    const sizeKB = (log.size / 1024).toFixed(2);
+                    const date = new Date(log.modified).toLocaleString();
+                    
+                    logItem.innerHTML = `
+                        <div class="log-name">📄 ${log.name}</div>
+                        <div class="log-meta">📊 ${sizeKB} KB | 🕒 ${date}</div>
+                    `;
+                    
+                    logsList.appendChild(logItem);
+                });
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('logsList').innerHTML = '<p style="color: #666; text-align: center;">Error cargando logs</p>';
+            }
+        }
+
+        // Ver log específico
+        async function viewLog(filename) {
+            try {
+                const response = await fetch(`/api/logs/${encodeURIComponent(filename)}`);
+                const data = await response.json();
+                
+                if (data.content) {
+                    clearConsole();
+                    addConsoleLine(`=== Mostrando log: ${filename} ===`, 'info');
+                    data.content.split('\n').forEach(line => {
+                        if (line.trim()) {
+                            addConsoleLine(line, 'info');
+                        }
+                    });
+                }
+            } catch (error) {
+                showAlert(`Error cargando log: ${error.message}`, 'error');
+            }
+        }
+
+        // Cargar logs al iniciar
+        loadLogs();
+    </script>
+</body>
+</html>
