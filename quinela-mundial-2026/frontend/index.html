@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Quinela Mundial FIFA 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .content { padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #2d3436; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: #00b894; }
+        .btn { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; transition: transform 0.2s; width: 100%; margin-top: 20px; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .group-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .group-section h3 { color: #00b894; margin-bottom: 15px; border-bottom: 2px solid #00b894; padding-bottom: 10px; }
+        .teams-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .qualified-section { margin-top: 15px; padding-top: 15px; border-top: 2px dashed #dfe6e9; }
+        .qualified-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .knockout-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .bracket { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+        .bracket-round { background: white; padding: 15px; border-radius: 8px; min-width: 200px; }
+        .match { background: #f1f2f6; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .awards-section { background: #f8f9fa; padding: 20px; border-radius: 10px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 12px; background: #dfe6e9; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; min-width: 120px; }
+        .tab-btn.active { background: #00b894; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        @media (max-width: 768px) { .teams-grid, .qualified-grid { grid-template-columns: 1fr; } .bracket { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Quinela Mundial FIFA 2026</h1>
+            <p>Predice los resultados del Mundial y compite con otros fans</p>
+        </div>
+        
+        <div class="content">
+            <div id="alertBox" class="alert"></div>
+            
+            <div class="form-group">
+                <label for="userName">👤 Tu Nombre:</label>
+                <input type="text" id="userName" placeholder="Ingresa tu nombre completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="predDate">📅 Fecha de Predicción:</label>
+                <input type="date" id="predDate">
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('groups')">Fase de Grupos</button>
+                <button class="tab-btn" onclick="showTab('knockout')">Eliminatorias</button>
+                <button class="tab-btn" onclick="showTab('awards')">Premios</button>
+            </div>
+            
+            <!-- Fase de Grupos -->
+            <div id="groups-tab" class="tab-content active">
+                <div id="groupsContainer"></div>
+            </div>
+            
+            <!-- Eliminatorias -->
+            <div id="knockout-tab" class="tab-content">
+                <div class="knockout-section">
+                    <h3>🏆 Fase Final</h3>
+                    <div class="bracket">
+                        <div class="bracket-round">
+                            <h4>Octavos (R16)</h4>
+                            <div id="r16Container"></div>
+                        </div>
+                        <div class="bracket-round">
+                            <h4>Cuartos (QF)</h4>
+                            <div id="qfContainer"></div>
+                        </div>
+                        <div class="bracket-round">
+                            <h4>Semifinales (SF)</h4>
+                            <div id="sfContainer"></div>
+                        </div>
+                        <div class="bracket-round">
+                            <h4>Final</h4>
+                            <div id="finalContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Premios -->
+            <div id="awards-tab" class="tab-content">
+                <div class="awards-section">
+                    <h3>🏅 Premios Individuales</h3>
+                    <div class="form-group">
+                        <label>⚽ Máximo Goleador:</label>
+                        <input type="text" id="topScorer" placeholder="Nombre del jugador">
+                    </div>
+                    <div class="form-group">
+                        <label>Goles del Goleador:</label>
+                        <input type="number" id="topScorerGoals" min="1" max="15" placeholder="Ej: 8">
+                    </div>
+                    <div class="form-group">
+                        <label>🎯 Máximo Asistidor:</label>
+                        <input type="text" id="topAssist" placeholder="Nombre del jugador">
+                    </div>
+                    <div class="form-group">
+                        <label>🌟 Balón de Oro (Mejor Jugador):</label>
+                        <input type="text" id="goldenBall" placeholder="Nombre del jugador">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="saveAndSend()" id="submitBtn">📧 Guardar y Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de grupos y equipos
+        const GROUPS = {
+            'A': ['México', 'Polonia', 'Arabia Saudita', 'Sudáfrica', 'Egipto', 'Rusia'],
+            'B': ['España', 'Portugal', 'Marruecos', 'Irán', 'EEUU', 'Gales'],
+            'C': ['Argentina', 'Dinamarca', 'Túnez', 'Australia', 'Japón', 'Colombia'],
+            'D': ['Francia', 'Croacia', 'Nigeria', 'Canadá', 'Corea del Sur', 'Panamá'],
+            'E': ['Brasil', 'Serbia', 'Camerún', 'Suiza', 'Ghana', 'Costa Rica'],
+            'F': ['Inglaterra', 'Italia', 'Uruguay', 'Senegal', 'Chile', 'Nueva Zelanda'],
+            'G': ['Alemania', 'Bélgica', 'Países Bajos', 'Ucrania', 'Ecuador', 'Qatar'],
+            'H': ['Perú', 'Islandia', 'Turquía', 'Paraguay', 'Argelia', 'Eslovenia'],
+            'I': ['Suecia', 'Rep. Checa', 'Grecia', 'Bolivia', 'Honduras', 'India'],
+            'J': ['Noruega', 'Austria', 'Rumania', 'Venezuela', 'Malí', 'China'],
+            'K': ['Croacia B', 'Finlandia', 'Serbia B', 'Jamaica', 'Zambia', 'Trinidad'],
+            'L': ['Suiza B', 'Hungría', 'Eslovaquia', 'Guatemala', 'Cuba', 'Fiyi']
+        };
+
+        // Inicializar fecha
+        document.getElementById('predDate').valueAsDate = new Date();
+
+        // Mostrar/Ocultar tabs
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Generar interfaz de grupos
+        function renderGroups() {
+            const container = document.getElementById('groupsContainer');
+            let html = '';
+            
+            Object.entries(GROUPS).forEach(([group, teams]) => {
+                html += `<div class="group-section"><h3>🔹 Grupo ${group}</h3><div class="teams-grid">`;
+                teams.forEach((team, idx) => {
+                    html += `<div class="form-group"><label>${team}:</label>`;
+                    html += `<select id="${group}${idx+1}"><option value="">-- Posición --</option>`;
+                    for(let i=1; i<=6; i++) html += `<option value="${i}">${i}°</option>`;
+                    html += `</select></div>`;
+                });
+                html += `</div><div class="qualified-section"><h4>Clasificados:</h4><div class="qualified-grid">`;
+                ['first', 'second', 'third'].forEach(pos => {
+                    html += `<select id="${group}-${pos}"><option value="">${pos==='first'?'1°':pos==='second'?'2°':'3°'}</option>`;
+                    teams.forEach(t => html += `<option value="${t}">${t}</option>`);
+                    html += `</select>`;
+                });
+                html += `</div></div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Generar eliminatorias
+        function renderKnockout() {
+            const rounds = [
+                {id: 'r16', count: 16, name: 'R'},
+                {id: 'qf', count: 8, name: 'OF'},
+                {id: 'sf', count: 4, name: 'CF'},
+                {id: 'final', count: 2, name: 'SF'}
+            ];
+            
+            rounds.forEach(round => {
+                const container = document.getElementById(`${round.id}Container`);
+                let html = '';
+                for(let i=1; i<=round.count; i++) {
+                    html += `<div class="match"><select id="${round.name}${i}">`;
+                    html += `<option value="">-- Ganador --</option>`;
+                    html += `<option value="pen">★ Penales</option>`;
+                    Object.values(GROUPS).flat().sort().forEach(t => {
+                        html += `<option value="${t}">${t}</option>`;
+                    });
+                    html += `</select></div>`;
+                }
+                container.innerHTML = html;
+            });
+            
+            // Final y 3er lugar
+            const finalContainer = document.getElementById('finalContainer');
+            finalContainer.innerHTML += `
+                <div class="match"><label>🥇 Campeón:</label><select id="FINAL1">
+                    <option value="">-- Campeón --</option>
+                    <option value="pen">★ Penales</option>
+                    ${Object.values(GROUPS).flat().sort().map(t => `<option value="${t}">${t}</option>`).join('')}
+                </select></div>
+                <div class="match"><label>🥉 3er Lugar:</label><select id="3RD1">
+                    <option value="">-- 3er Lugar --</option>
+                    <option value="pen">★ Penales</option>
+                    ${Object.values(GROUPS).flat().sort().map(t => `<option value="${t}">${t}</option>`).join('')}
+                </select></div>
+            `;
+        }
+
+        // Recopilar predicciones
+        function collectPredictions() {
+            const predictions = { groups: {}, qualified: {}, knockout: {}, awards: {} };
+            
+            // Grupos
+            Object.keys(GROUPS).forEach(g => {
+                for(let i=1; i<=6; i++) {
+                    const val = document.getElementById(`${g}${i}`).value;
+                    if(val) predictions.groups[`${g}${i}`] = val;
+                }
+                ['first', 'second', 'third'].forEach(pos => {
+                    const val = document.getElementById(`${g}-${pos}`).value;
+                    if(val) {
+                        if(!predictions.qualified[g]) predictions.qualified[g] = {};
+                        predictions.qualified[g][pos] = val;
+                    }
+                });
+            });
+            
+            // Eliminatorias
+            ['R','OF','CF','SF','FINAL','3RD'].forEach(pf => {
+                const cnt = pf==='R'?16:pf==='OF'?8:pf==='CF'?4:pf==='SF'?2:1;
+                for(let i=1; i<=cnt; i++) {
+                    const val = document.getElementById(`${pf}${i}`).value;
+                    if(val) {
+                        if(!predictions.knockout[`${pf}${i}`]) predictions.knockout[`${pf}${i}`] = {};
+                        predictions.knockout[`${pf}${i}`].p = val === 'pen' ? '__PEN__' : val;
+                        predictions.knockout[`${pf}${i}`].pen = val === 'pen';
+                    }
+                }
+            });
+            
+            // Premios
+            predictions.awards = {
+                ts: document.getElementById('topScorer').value,
+                tsg: document.getElementById('topScorerGoals').value,
+                ta: document.getElementById('topAssist').value,
+                gb: document.getElementById('goldenBall').value
+            };
+            
+            return predictions;
+        }
+
+        // Sanitizar nombre para localStorage
+        function sanitize(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        }
+
+        // Mostrar alerta
+        function showAlert(msg, type='success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = msg;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 5000);
+        }
+
+        // Guardar y Enviar
+        async function saveAndSend() {
+            const userName = document.getElementById('userName').value.trim();
+            if(!userName) { 
+                showAlert('⚠️ Ingresa tu nombre primero', 'error'); 
+                return; 
+            }
+            
+            const predictions = collectPredictions();
+            predictions.userName = userName;
+            predictions.date = document.getElementById('predDate').value;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Enviando...';
+            
+            try {
+                // Enviar al backend
+                const response = await fetch('http://localhost:3000/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userName: userName,
+                        predictions: predictions,
+                        password: 'Ok12345*'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    // Guardar local también
+                    localStorage.setItem(`quinela_${sanitize(userName)}`, JSON.stringify(predictions));
+                    localStorage.setItem('quinela_last', sanitize(userName));
+                    showAlert(`✅ ${result.message}\n📁 Archivo: ${result.fileName}`, 'success');
+                } else {
+                    showAlert('❌ Error: ' + result.error, 'error');
+                }
+                
+            } catch(err) {
+                showAlert('❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo en http://localhost:3000', 'error');
+                console.error(err);
+                
+                // Fallback: guardar solo en localStorage
+                localStorage.setItem(`quinela_${sanitize(userName)}`, JSON.stringify(predictions));
+                localStorage.setItem('quinela_last', sanitize(userName));
+                showAlert('⚠️ Sin conexión al backend. Datos guardados localmente.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📧 Guardar y Enviar';
+            }
+        }
+
+        // Cargar datos guardados
+        function loadSavedData() {
+            const lastUser = localStorage.getItem('quinela_last');
+            if(lastUser) {
+                const saved = localStorage.getItem(`quinela_${lastUser}`);
+                if(saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        document.getElementById('userName').value = data.userName || '';
+                        document.getElementById('predDate').value = data.date || '';
+                        
+                        // Cargar grupos
+                        Object.entries(data.groups || {}).forEach(([key, val]) => {
+                            const el = document.getElementById(key);
+                            if(el) el.value = val;
+                        });
+                        
+                        // Cargar clasificados
+                        Object.entries(data.qualified || {}).forEach(([group, quals]) => {
+                            Object.entries(quals).forEach(([pos, val]) => {
+                                const el = document.getElementById(`${group}-${pos}`);
+                                if(el) el.value = val;
+                            });
+                        });
+                        
+                        // Cargar premios
+                        if(data.awards) {
+                            document.getElementById('topScorer').value = data.awards.ts || '';
+                            document.getElementById('topScorerGoals').value = data.awards.tsg || '';
+                            document.getElementById('topAssist').value = data.awards.ta || '';
+                            document.getElementById('goldenBall').value = data.awards.gb || '';
+                        }
+                        
+                        showAlert('✅ Datos cargados de sesión anterior');
+                    } catch(e) {
+                        console.error('Error cargando datos:', e);
+                    }
+                }
+            }
+        }
+
+        // Inicializar
+        renderGroups();
+        renderKnockout();
+        loadSavedData();
+    </script>
+</body>
+</html>
