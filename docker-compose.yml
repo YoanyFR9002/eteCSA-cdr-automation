@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  asn1-decoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: asn1-web-decoder
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_UPLOAD_SIZE=${MAX_UPLOAD_SIZE:-104857600}
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - decoder-net
+
+networks:
+  decoder-net:
+    driver: bridge

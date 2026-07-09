@@ -1,0 +1,21 @@
+# Node modules - No subir a Git
+node_modules/
+
+# Variables de entorno con datos sensibles
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/

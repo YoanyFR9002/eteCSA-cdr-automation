@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASN.1 Web Decoder | CDR Analyzer</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-card: #151f32;
+            --bg-input: #1e2d4a;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent-blue: #0ea5e9;
+            --accent-red: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f172a 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--accent-blue), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="file"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-input);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .console {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 300px;
+            overflow-y: auto;
+            color: var(--text-muted);
+        }
+
+        .console-line {
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+
+        .console-line.error {
+            color: var(--accent-red);
+        }
+
+        .console-line.success {
+            color: var(--success);
+        }
+
+        .console-line.info {
+            color: var(--accent-blue);
+        }
+
+        .results-container {
+            margin-top: 2rem;
+        }
+
+        .result-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tag-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .type-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .value-preview {
+            color: var(--success);
+            word-break: break-all;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-processing {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-completed {
+            background: var(--success);
+        }
+
+        .status-error {
+            background: var(--error);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab:hover {
+            color: var(--text-main);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .log-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .log-item:hover {
+            background: var(--border);
+        }
+
+        .log-filename {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .log-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 ASN.1 Web Decoder</h1>
+            <p class="subtitle">Decodificador de CDRs binarios con soporte ASN.1 y modo heurístico TLV</p>
+        </header>
+
+        <div class="grid">
+            <!-- Panel de Carga -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">📤</span>
+                    <h2 class="card-title">Cargar Archivos</h2>
+                </div>
+
+                <div id="alert-container"></div>
+
+                <form id="decode-form">
+                    <div class="form-group">
+                        <label for="cdr-file">Archivo CDR Binario (*.bin, *.dat, *)</label>
+                        <input type="file" id="cdr-file" name="file" accept=".bin,.dat,*" required>
+                    </div>
+
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="use-asn1" name="use_asn1">
+                        <label for="use-asn1" style="margin:0; cursor:pointer;">Usar estructura ASN.1 personalizada</label>
+                    </div>
+
+                    <div class="form-group hidden" id="asn1-file-group">
+                        <label for="asn1-file">Archivo de Estructura ASN.1 (JSON)</label>
+                        <input type="file" id="asn1-file" name="asn1_file" accept=".json,.asn,.txt">
+                    </div>
+
+                    <button type="submit" class="btn" id="decode-btn">
+                        <span>🚀</span> Iniciar Decodificación
+                    </button>
+                </form>
+            </div>
+
+            <!-- Panel de Estado -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">📊</span>
+                    <h2 class="card-title">Estado del Proceso</h2>
+                </div>
+
+                <div id="status-display" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-input); border-radius: 6px;">
+                    <span class="status-indicator" id="status-dot"></span>
+                    <span id="status-text">Esperando archivo...</span>
+                </div>
+
+                <div class="console" id="console-output">
+                    <div class="console-line info">[Sistema] Listo para decodificar...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="card results-container hidden" id="results-card">
+            <div class="card-header">
+                <span class="icon">📋</span>
+                <h2 class="card-title">Resultados de Decodificación</h2>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="table">Tabla</div>
+                <div class="tab" data-tab="json">JSON</div>
+                <div class="tab" data-tab="hex">Hex Dump</div>
+            </div>
+
+            <div id="tab-table" class="tab-content">
+                <div id="results-table"></div>
+            </div>
+
+            <div id="tab-json" class="tab-content hidden">
+                <pre id="results-json" class="console" style="height: 500px;"></pre>
+            </div>
+
+            <div id="tab-hex" class="tab-content hidden">
+                <pre id="results-hex" class="console" style="height: 500px;"></pre>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <span class="icon">📜</span>
+                <h2 class="card-title">Registro de Logs</h2>
+            </div>
+
+            <button class="btn btn-secondary" onclick="loadLogs()" style="margin-bottom: 1rem;">
+                🔄 Actualizar Logs
+            </button>
+
+            <div class="log-list" id="log-list"></div>
+        </div>
+
+        <footer>
+            <p>ASN.1 Web Decoder v1.0 | Desarrollado para análisis de CDRs telecom</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Soporta decodificación ASN.1 estructurada y modo heurístico TLV automático
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle ASN.1 file input
+        document.getElementById('use-asn1').addEventListener('change', function() {
+            const asn1Group = document.getElementById('asn1-file-group');
+            if (this.checked) {
+                asn1Group.classList.remove('hidden');
+            } else {
+                asn1Group.classList.add('hidden');
+            }
+        });
+
+        // Form submission
+        document.getElementById('decode-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const decodeBtn = document.getElementById('decode-btn');
+            const consoleOutput = document.getElementById('console-output');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            // Update UI
+            decodeBtn.disabled = true;
+            decodeBtn.innerHTML = '<span>⏳</span> Procesando...';
+            statusDot.className = 'status-indicator status-processing';
+            statusText.textContent = 'Decodificando...';
+            consoleOutput.innerHTML = '<div class="console-line info">[Sistema] Iniciando proceso de decodificación...</div>';
+            
+            try {
+                const response = await fetch('/api/decode', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error en la decodificación');
+                }
+                
+                // Start SSE stream
+                startSSEStream(data.session_id);
+                
+            } catch (error) {
+                showAlert(error.message, 'error');
+                decodeBtn.disabled = false;
+                decodeBtn.innerHTML = '<span>🚀</span> Iniciar Decodificación';
+                statusDot.className = 'status-indicator status-error';
+                statusText.textContent = 'Error';
+                consoleOutput.innerHTML += `<div class="console-line error">[ERROR] ${error.message}</div>`;
+            }
+        });
+
+        function startSSEStream(sessionId) {
+            const consoleOutput = document.getElementById('console-output');
+            const eventSource = new EventSource(`/api/stream/${sessionId}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.line) {
+                    const lineClass = data.line.includes('❌') ? 'error' : 
+                                     data.line.includes('✅') ? 'success' : 'info';
+                    consoleOutput.innerHTML += `<div class="console-line ${lineClass}">${data.line}</div>`;
+                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                }
+                
+                if (data.done) {
+                    eventSource.close();
+                    
+                    const decodeBtn = document.getElementById('decode-btn');
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    
+                    decodeBtn.disabled = false;
+                    decodeBtn.innerHTML = '<span>🚀</span> Iniciar Nueva Decodificación';
+                    
+                    if (data.status === 'completed') {
+                        statusDot.className = 'status-indicator status-completed';
+                        statusText.textContent = 'Completado';
+                        showAlert('Decodificación completada exitosamente', 'success');
+                        loadResults(sessionId);
+                    } else {
+                        statusDot.className = 'status-indicator status-error';
+                        statusText.textContent = 'Fallido';
+                        showAlert('Error en la decodificación', 'error');
+                    }
+                    
+                    loadLogs();
+                }
+            };
+            
+            eventSource.onerror = function() {
+                eventSource.close();
+                consoleOutput.innerHTML += '<div class="console-line error">[ERROR] Conexión interrumpida</div>';
+            };
+        }
+
+        async function loadResults(sessionId) {
+            const response = await fetch(`/api/status/${sessionId}`);
+            const data = await response.json();
+            
+            if (data.result) {
+                document.getElementById('results-card').classList.remove('hidden');
+                
+                // Render table
+                const tableContainer = document.getElementById('results-table');
+                if (Array.isArray(data.result)) {
+                    tableContainer.innerHTML = data.result.map(item => `
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="tag-badge">${item.tag}</span>
+                                <span class="type-badge">${item.type}</span>
+                            </div>
+                            <div><strong>Offset:</strong> ${item.offset}</div>
+                            <div><strong>Longitud:</strong> ${item.length} bytes</div>
+                            <div><strong>Valor:</strong> <span class="value-preview">${typeof item.value === 'object' ? JSON.stringify(item.value) : item.value}</span></div>
+                        </div>
+                    `).join('');
+                } else {
+                    tableContainer.innerHTML = `<pre class="console">${JSON.stringify(data.result, null, 2)}</pre>`;
+                }
+                
+                // Render JSON
+                document.getElementById('results-json').textContent = JSON.stringify(data.result, null, 2);
+                
+                // Render Hex (simplified)
+                document.getElementById('results-hex').textContent = 'Vista Hex disponible en próxima versión';
+            }
+        }
+
+        async function loadLogs() {
+            const response = await fetch('/api/logs');
+            const logs = await response.json();
+            
+            const logList = document.getElementById('log-list');
+            if (logs.length === 0) {
+                logList.innerHTML = '<div style="color: var(--text-muted); text-align: center;">No hay logs disponibles</div>';
+                return;
+            }
+            
+            logList.innerHTML = logs.map(log => `
+                <div class="log-item" onclick="viewLog('${log.filename}')">
+                    <div class="log-filename">📄 ${log.filename}</div>
+                    <div class="log-meta">${formatBytes(log.size)} | ${new Date(log.modified).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        async function viewLog(filename) {
+            const response = await fetch(`/api/logs/${filename}`);
+            const content = await response.text();
+            
+            const consoleOutput = document.getElementById('console-output');
+            consoleOutput.innerHTML = content.split('\n').map(line => 
+                `<div class="console-line ${line.includes('ERROR') ? 'error' : line.includes('INFO') ? 'info' : ''}">${line}</div>`
+            ).join('');
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <span>${type === 'error' ? '❌' : '✅'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                
+                this.classList.add('active');
+                document.getElementById(`tab-${this.dataset.tab}`).classList.remove('hidden');
+            });
+        });
+
+        // Load logs on page load
+        loadLogs();
+    </script>
+</body>
+</html>

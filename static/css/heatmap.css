@@ -1,0 +1,150 @@
+/* Heatmap styles for error highlighting */
+
+.error-heatmap {
+    position: relative;
+}
+
+.heatmap-cell {
+    transition: all 0.3s ease;
+}
+
+.heatmap-cell.error-high {
+    background: rgba(255, 71, 87, 0.4);
+    border: 2px solid var(--error);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.heatmap-cell.error-medium {
+    background: rgba(255, 152, 0, 0.3);
+    border: 1px solid #ff9800;
+}
+
+.heatmap-cell.error-low {
+    background: rgba(255, 193, 7, 0.2);
+    border-left: 2px solid var(--warning);
+}
+
+.heatmap-cell.success {
+    background: rgba(78, 204, 163, 0.15);
+    border-left: 2px solid var(--success);
+}
+
+/* Intensity indicator */
+.heatmap-intensity {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.intensity-high {
+    background: var(--error);
+    box-shadow: 0 0 5px var(--error);
+}
+
+.intensity-medium {
+    background: #ff9800;
+}
+
+.intensity-low {
+    background: var(--warning);
+}
+
+.intensity-none {
+    background: var(--border);
+}
+
+/* Error count badge */
+.error-badge {
+    background: var(--error);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+.warning-badge {
+    background: var(--warning);
+    color: #333;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+/* Tooltip for heatmap cells */
+.heatmap-tooltip {
+    position: absolute;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    max-width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.heatmap-cell:hover .heatmap-tooltip {
+    opacity: 1;
+}
+
+/* Legend for heatmap */
+.heatmap-legend {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+/* Animation for new errors */
+@keyframes error-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+    }
+}
+
+.error-highlight {
+    animation: error-pulse 2s infinite;
+}
+
+/* Field-level error indicators */
+.field-error {
+    position: relative;
+}
+
+.field-error::after {
+    content: '⚠️';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 1rem;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}

@@ -1,8 +1,28 @@
 ```
-# Compressed archives
-*.tar.gz
+# Dependencies
+node_modules/
 
-# Python
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Build outputs
+dist/
+build/
+target/
+
+# Logs
+*.log
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Python (if present)
 __pycache__/
 *.pyc
 *.pyo
@@ -10,28 +30,29 @@ __pycache__/
 .Python
 env/
 venv/
-ENV/
 .venv/
-.env
-.env.local
-.env.
-.envrc
-.python-version
-.pytest_cache/
-.mypy_cache/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
 .coverage
-htmlcov/
-
-# Web
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Logs
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
-
-# OS generated files
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.MF
+tags
+TAGS
+ID
+GTAGS
+GRTAGS
+GSYMS
+GPATH
 .DS_Store
 .DS_Store?
 ._*
